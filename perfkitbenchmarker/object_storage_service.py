@@ -18,6 +18,7 @@
 import abc
 import logging
 import os
+from typing import Optional
 
 from absl import flags
 from perfkitbenchmarker import errors
@@ -279,9 +280,27 @@ class ObjectStorageService(
 
     Args:
       samples: the samples that need the metadata to be updated with provider
-                specific information.
+        specific information.
     """
     pass
+
+  def GetDownloadUrl(self,
+                     bucket: str,
+                     object_name: str,
+                     use_https=True) -> str:
+    """Get the URL to download objects over HTTP(S)."""
+    raise NotImplementedError
+
+  def GetUploadUrl(self, bucket: str, object_name: str, use_https=True) -> str:
+    """Get the URL to upload objects over HTTP(S)."""
+    return self.GetDownloadUrl(bucket, object_name, use_https)
+
+  # Different services require uploads to be POST or PUT.
+  UPLOAD_HTTP_METHOD: Optional[str] = None
+
+  def MakeBucketPubliclyReadable(self, bucket: str, also_make_writable=False):
+    """Make a bucket readable and optionally writable by everyone."""
+    raise NotImplementedError
 
   def APIScriptArgs(self):
     """Extra arguments for the API test script.
